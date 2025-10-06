@@ -4,7 +4,7 @@
   "description": "Shift Left — Event Driven Monitoring & DevOps Automation",
   "scripts": {
     "dev": "marp -s . --html --open",
-    "build": "marp deck.md --html --allow-local-files -o dist/index.html"
+    "build": "marp deck.md --html --allow-local-files -o dist/index.html && mkdir dist\\code dist\\images && xcopy code dist\\code /E /I /Y && xcopy images dist\\images /E /I /Y"
   },
   "dependencies": {
     "@marp-team/marp-cli": "^3.4.0"

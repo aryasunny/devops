@@ -3,8 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "marp deck.md --html --server --watch --open",
-    "build": "marp deck.md --html --pdf --allow-local-files -o dist/deck",
-    "build:html": "marp deck.md --html --allow-local-files -o dist/deck.html",
+    "build": "marp deck.md --html --allow-local-files -o dist/index.html",
     "build:pdf": "marp deck.md --pdf --allow-local-files -o dist/deck.pdf"
   },
   "devDependencies": {

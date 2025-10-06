@@ -3,10 +3,6 @@ name: Build & Deploy Slides (Marp)
 on:
     push:
         branches: [main]
-        paths:
-            - deck.md
-            - package.json
-            - .github/workflows/marp.yml
     workflow_dispatch:
 
 permissions:
@@ -20,7 +16,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
-              with: { node-version: "20" }
+              with: { node-version: 20, cache: "npm" }
             - run: npm ci
             - name: Build HTML & PDF
               run: npm run build
@@ -32,8 +28,9 @@ jobs:
     deploy:
         needs: build
         runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
         steps:
             - id: deployment
               uses: actions/deploy-pages@v4
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}

@@ -2,9 +2,10 @@
   "name": "event-driven-email-deck",
   "private": true,
   "scripts": {
-    "dev": "marp deck.md --html --server --watch --open",
+    "dev": "marp -s . --html --watch --open",
     "build": "marp deck.md --html --allow-local-files -o dist/index.html",
-    "build:pdf": "marp deck.md --pdf --allow-local-files -o dist/deck.pdf"
+    "build:pdf": "marp deck.md --pdf --allow-local-files -o dist/deck.pdf",
+    "preview": "marp --preview deck.md"
   },
   "devDependencies": {
     "@marp-team/marp-cli": "^3.4.0"

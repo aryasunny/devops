@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CDK – Monitoring Stack</title>
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica,
+          Arial;
+        padding: 24px;
+        max-width: 900px;
+        margin: auto;
+        line-height: 1.5;
+      }
+      pre {
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 16px;
+        border-radius: 10px;
+        overflow: auto;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 14px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #111;
+        margin-bottom: 16px;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="btn" href="../">← Back to slides</a>
+    <h1>CDK: Monitoring Stack</h1>
+    <p>Alarms, dashboards, and alerting wired as code.</p>
+
+    <pre><code>// monitoring-stack.ts
+import { Stack, Duration } from "aws-cdk-lib";
+import { Alarm, Metric, ComparisonOperator, Dashboard } from "aws-cdk-lib/aws-cloudwatch";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { SnsAction } from "aws-cdk-lib/aws-cloudwatch-actions";
+
+export class MonitoringStack extends Stack {
+  constructor(scope: Construct, id: string, props: StackProps) {
+    super(scope, id, props);
+
+    const alerts = new Topic(this, "AlertsTopic");
+
+    const lambdaErrors = new Metric({
+      namespace: "AWS/Lambda",
+      metricName: "Errors",
+      statistic: "Sum",
+      period: Duration.minutes(5),
+    });
+
+    const errAlarm = new Alarm(this, "LambdaErrorAlarm", {
+      metric: lambdaErrors,
+      threshold: 1,
+      evaluationPeriods: 1,
+      comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      alarmDescription: "Lambda errors > 0 in 5 minutes",
+    });
+    errAlarm.addAlarmAction(new SnsAction(alerts));
+
+    new Dashboard(this, "OpsDashboard", { dashboardName: "EmailService-Monitoring" });
+  }
+}
+</code></pre>
+  </body>
+</html>

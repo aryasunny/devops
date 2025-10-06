@@ -1,13 +1,12 @@
 {
-  "name": "event-driven-email-deck",
-  "private": true,
+  "name": "devops-slides",
+  "version": "1.0.0",
+  "description": "Shift Left — Event Driven Monitoring & DevOps Automation",
   "scripts": {
-    "dev": "marp -s . --html --watch --open",
-    "build": "marp deck.md --html --allow-local-files -o dist/index.html",
-    "build:pdf": "marp deck.md --pdf --allow-local-files -o dist/deck.pdf",
-    "preview": "marp --preview deck.md"
+    "dev": "marp -s dist --html --watch --open",
+    "build": "marp deck.md --html --allow-local-files -o dist/index.html && marp deck.md --pdf --allow-local-files -o dist/deck.pdf && mkdir -p dist/code && cp -r code/. dist/code/ && mkdir -p dist/images && cp -r images/. dist/images/"
   },
-  "devDependencies": {
-    "@marp-team/marp-cli": "^3.4.0"
+  "dependencies": {
+    "marp-cli": "^3.4.0"
   }
 }

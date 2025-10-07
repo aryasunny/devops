@@ -45,7 +45,8 @@
     </style>
   </head>
   <body>
-    <a class="back-link" href="../?v=2025-01-07&t=" onclick="this.href += Date.now(); return true;"
+    <a class="back-link" href="#"
+      onclick="window.location.href = window.location.origin + window.location.pathname.replace('/code/', '/').replace('/gha-monitoring.html', '') + '?v=2025-01-07&t=' + Date.now(); return false;"
       >← Back to slides</a
     >
     <h1>🚀 PR-Driven Monitoring Deployment with Environment Promotion</h1>

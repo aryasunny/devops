@@ -47,8 +47,8 @@
   <body>
     <a
       class="back-link"
-      href="../?v=2025-01-07&t="
-      onclick="this.href += Date.now(); return true;"
+      href="#"
+      onclick="window.location.href = window.location.origin + window.location.pathname.replace('/code/', '/').replace('/cdk-monitoring.html', '') + '?v=2025-01-07&t=' + Date.now(); return false;"
       >← Back to slides</a
     >
     <h1>CDK: Monitoring as Code with Team Self-Service</h1>

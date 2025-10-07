@@ -50,9 +50,12 @@ section.smaller table {
 }
 </style>
 
-# Event-Driven Monitoring & DevOps Automation
+# Event-Driven Architecture & DevOps Automation
 
-### _AWS CDK + GitHub Actions + Shift-Left Observability_
+#### _AWS CDK_
+#### _GitHub Actions_ 
+#### _Shift-Left_
+#### _Observability_
 
 ---
 

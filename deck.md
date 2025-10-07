@@ -154,7 +154,7 @@ img {
 <h3 style="color: #58a6ff; margin-bottom: 0.5rem;">📋 CDK Monitoring Resources</h3>
 
 - **CloudWatch Alarms** - Metric thresholds with actions
-- **Dashboards** - Team-specific metric views  
+- **Dashboards** - Team-specific metric views
 - **Log Groups & Metrics** - Custom application logs
 - **SNS Topics** - Alert routing and escalation
 - **EventBridge Rules** - Event-driven notifications
@@ -175,15 +175,15 @@ img {
 // teams/email-service/monitoring.ts
 export const emailServiceConfig = {
   thresholds: {
-    errorRate: 2,        // % 
-    latency: 5000,       // ms
-    bounceRate: 2,       // %
+    errorRate: 2, // %
+    latency: 5000, // ms
+    bounceRate: 2, // %
   },
   notifications: {
-    slack: '#email-alerts',
-    pager: 'email-oncall'
-  }
-}
+    slack: "#email-alerts",
+    pager: "email-oncall",
+  },
+};
 ```
 
 <h3 style="color: #58a6ff; margin: 1rem 0 0.5rem 0;">🎯 Benefits</h3>

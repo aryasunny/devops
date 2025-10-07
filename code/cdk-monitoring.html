@@ -1,41 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="UTF-8" />
     <title>CDK – Monitoring Stack</title>
     <style>
       body {
-        font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica,
-          Arial;
-        padding: 24px;
-        max-width: 900px;
-        margin: auto;
-        line-height: 1.5;
+        font-family: "Segoe UI", Roboto, sans-serif;
+        background-color: #0d1117;
+        color: #e6edf3;
+        padding: 40px;
+        line-height: 1.6;
       }
       pre {
-        background: #0f172a;
-        color: #e5e7eb;
-        padding: 16px;
+        background: #161b22;
+        border: 1px solid #30363d;
         border-radius: 10px;
-        overflow: auto;
+        padding: 20px;
+        overflow-x: auto;
+        font-size: 14px;
+        color: #d1d5da;
       }
-      .btn {
-        display: inline-block;
-        padding: 10px 14px;
-        border: 1px solid #444;
-        border-radius: 8px;
+      h1,
+      h2 {
+        color: #58a6ff;
+      }
+      a {
+        color: #8b949e;
         text-decoration: none;
-        color: #111;
-        margin-bottom: 16px;
       }
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      a:hover {
+        color: #58a6ff;
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 12px;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        background-color: #21262d;
+      }
+      .back-link:hover {
+        background-color: #30363d;
       }
     </style>
   </head>
   <body>
-    <a class="btn" href="#" onclick="window.history.back(); return false;"
+    <a class="back-link" href="#" onclick="window.history.back(); return false;"
       >← Back to slides</a
     >
     <h1>CDK: Monitoring Stack</h1>

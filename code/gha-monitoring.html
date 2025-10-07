@@ -31,9 +31,23 @@
       a:hover {
         color: #58a6ff;
       }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 12px;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        background-color: #21262d;
+      }
+      .back-link:hover {
+        background-color: #30363d;
+      }
     </style>
   </head>
   <body>
+    <a class="back-link" href="#" onclick="window.history.back(); return false;"
+      >← Back to slides</a
+    >
     <h1>🚀 GitHub Actions Workflow for Monitoring Deployment</h1>
     <p>
       This workflow builds and deploys monitoring infrastructure defined in AWS
@@ -73,11 +87,5 @@ jobs:
       - name: Deploy monitoring stack
         run: npx cdk deploy monitoring-stack --require-approval never
 </code></pre>
-
-    <p>
-      <a href="#" onclick="window.history.back(); return false;"
-        >⬅ Back to Slides</a
-      >
-    </p>
   </body>
 </html>

@@ -5,6 +5,31 @@ paginate: true
 transition: fade
 ---
 
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<script>
+// Force refresh when returning to page
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    // Page was loaded from cache, force reload
+    window.location.reload();
+  }
+});
+
+// Also handle visibility changes (when tab becomes visible again)
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    // Check if we need to refresh based on navigation timing
+    const perfData = performance.getEntriesByType('navigation')[0];
+    if (perfData && perfData.type === 'back_forward') {
+      window.location.reload();
+    }
+  }
+});
+</script>
+
 <style>
 section {
   overflow: hidden;

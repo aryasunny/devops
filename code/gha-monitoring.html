@@ -48,44 +48,284 @@
     <a class="back-link" href="#" onclick="window.history.back(); return false;"
       >← Back to slides</a
     >
-    <h1>🚀 GitHub Actions Workflow for Monitoring Deployment</h1>
+    <h1>🚀 PR-Driven Monitoring Deployment with Environment Promotion</h1>
     <p>
-      This workflow builds and deploys monitoring infrastructure defined in AWS
-      CDK — CloudWatch alarms, dashboards, and SNS topics — ensuring
-      version-controlled and automated rollouts.
+      Complete CI/CD pipeline for monitoring infrastructure with team configuration validation, 
+      PR reviews, environment promotion (dev → staging → prod), and rollback capabilities.
     </p>
 
-    <h2>🧩 .github/workflows/deploy-monitoring.yml</h2>
+    <h2>PR Validation Workflow</h2>
+    <pre><code name="yaml"># .github/workflows/pr-validation.yml
+name: Validate Monitoring Changes
 
-    <pre><code name="yaml">
-name: Deploy Monitoring (CDK)
+on:
+  pull_request:
+    paths:
+      - 'teams/*/monitoring-config.ts'
+      - 'infrastructure/monitoring-stack.ts'
+      - 'cdk.json'
+
+jobs:
+  validate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate team configurations
+        run: |
+          npm run validate-configs
+          # Check threshold ranges, notification endpoints
+          
+      - name: CDK Synth & Diff
+        env:
+          AWS_DEFAULT_REGION: ap-southeast-2
+        run: |
+          npx cdk synth --all
+          npx cdk diff monitoring-stack-dev
+          
+      - name: Security scan
+        run: |
+          npm audit
+          npx cdk-nag --app 'npx ts-node infrastructure/app.ts'
+          
+      - name: Comment PR with changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const diff = fs.readFileSync('cdk.diff', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📊 Monitoring Changes Preview\n\n\`\`\`diff\n${diff}\n\`\`\``
+            });
+</code></pre>
+
+    <h2>Environment Promotion Pipeline</h2>
+    <pre><code name="yaml"># .github/workflows/deploy-monitoring.yml
+name: Deploy Monitoring Infrastructure
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - staging
+        - prod
 
 permissions:
   id-token: write
   contents: read
+  issues: write
 
 jobs:
-  deploy:
+  deploy-dev:
     runs-on: ubuntu-latest
+    environment: development
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'dev'
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials - Dev
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/monitoring-deploy-role
+          role-to-assume: arn:aws:iam::123456789012:role/monitoring-dev-deploy
           aws-region: ap-southeast-2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Deploy monitoring stack
-        run: npx cdk deploy monitoring-stack --require-approval never
+      - name: Deploy to Dev
+        run: |
+          npx cdk deploy monitoring-stack-dev \
+            --context environment=dev \
+            --context team-configs=./teams \
+            --require-approval never \
+            --outputs-file dev-outputs.json
+
+      - name: Run smoke tests
+        run: |
+          npm run test:smoke -- --env dev
+          # Verify alarms are created, dashboards accessible
+
+      - name: Upload deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-deployment
+          path: |
+            dev-outputs.json
+            cdk.out/
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: deploy-dev
+    if: github.ref == 'refs/heads/main' && success()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials - Staging
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::789012345678:role/monitoring-staging-deploy
+          aws-region: ap-southeast-2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Staging
+        run: |
+          npx cdk deploy monitoring-stack-staging \
+            --context environment=staging \
+            --context team-configs=./teams \
+            --require-approval never
+
+      - name: Integration tests
+        run: |
+          npm run test:integration -- --env staging
+          # Test alarm functionality, dashboard rendering
+
+      - name: Performance validation
+        run: |
+          npm run test:performance -- --env staging
+          # Ensure monitoring doesn't impact app performance
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [deploy-dev, deploy-staging]
+    if: github.ref == 'refs/heads/main' && success()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials - Prod
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::345678901234:role/monitoring-prod-deploy
+          aws-region: ap-southeast-2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Production
+        run: |
+          npx cdk deploy monitoring-stack-prod \
+            --context environment=prod \
+            --context team-configs=./teams \
+            --require-approval never
+
+      - name: Verify deployment
+        run: |
+          npm run verify:prod-deployment
+          # Check all alarms are healthy, dashboards load
+
+      - name: Create deployment issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production',
+              description: 'Monitoring stack deployment'
+            });
+
+  rollback:
+    runs-on: ubuntu-latest
+    if: failure()
+    environment: production
+    steps:
+      - name: Notify on-call team
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-type: application/json' \
+            --data '{"text":"🚨 Monitoring deployment failed! Manual intervention required."}'
+            
+      - name: Auto-rollback to previous version
+        run: |
+          # Get previous successful deployment
+          PREV_SHA=$(git log --format="%H" -n 2 | tail -1)
+          echo "Rolling back to $PREV_SHA"
+          
+          # Trigger rollback deployment
+          gh workflow run deploy-monitoring.yml \
+            --ref $PREV_SHA \
+            --field environment=prod
+</code></pre>
+
+    <h2>Team Configuration Validation</h2>
+    <pre><code name="yaml"># scripts/validate-configs.js
+const fs = require('fs');
+const path = require('path');
+
+// Validate team monitoring configurations
+const validateConfigs = async () => {
+  const teamsDir = path.join(__dirname, '../teams');
+  const teams = fs.readdirSync(teamsDir);
+  
+  for (const team of teams) {
+    const configPath = path.join(teamsDir, team, 'monitoring-config.ts');
+    if (fs.existsSync(configPath)) {
+      const config = require(configPath);
+      
+      // Validate threshold ranges
+      if (config.thresholds.errorRate > 10) {
+        throw new Error(`${team}: Error rate threshold too high (${config.thresholds.errorRate}% > 10%)`);
+      }
+      
+      if (config.thresholds.latency > 30000) {
+        throw new Error(`${team}: Latency threshold too high (${config.thresholds.latency}ms > 30s)`);
+      }
+      
+      // Validate notification endpoints
+      if (!config.notifications.slack.startsWith('#')) {
+        throw new Error(`${team}: Invalid Slack channel format`);
+      }
+      
+      console.log(`✅ ${team} configuration valid`);
+    }
+  }
+  
+  console.log('All team configurations validated successfully!');
+};
+
+validateConfigs().catch(console.error);
 </code></pre>
   </body>
 </html>

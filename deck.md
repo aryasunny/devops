@@ -148,19 +148,58 @@ img {
 
 <h2 style="font-size: 91%;">🧩 Dev & Deploy of Monitoring (AWS CDK + GitHub Actions)</h2>
 
-<div style="font-size: 50%;">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; font-size: 0.6em;">
 
-- Define **CloudWatch alarms, dashboards, log metrics, SNS topics** in **CDK** (IaC).
-- Ship them via **GitHub Actions** to every env (preview → deploy → verify).
-- Observability changes are **version-controlled**, reviewed, and promoted like app code.
-- Engineers own **dashboards + alarms** from day one (shift-left).
+<div>
+<h3 style="color: #58a6ff; margin-bottom: 0.5rem;">📋 CDK Monitoring Resources</h3>
+
+- **CloudWatch Alarms** - Metric thresholds with actions
+- **Dashboards** - Team-specific metric views  
+- **Log Groups & Metrics** - Custom application logs
+- **SNS Topics** - Alert routing and escalation
+- **EventBridge Rules** - Event-driven notifications
+- **Lambda Functions** - Custom monitoring logic
+
+<h3 style="color: #58a6ff; margin: 1rem 0 0.5rem 0;">🔄 PR-Driven Deployment</h3>
+
+- **Code Review** - All monitoring changes reviewed
+- **Environment Promotion** - Dev → Staging → Prod
+- **Rollback Capability** - Git-based version control
+- **Change Tracking** - Full audit trail of modifications
+</div>
+
+<div>
+<h3 style="color: #58a6ff; margin-bottom: 0.5rem;">⚙️ Team Self-Service Interface</h3>
+
+```typescript
+// teams/email-service/monitoring.ts
+export const emailServiceConfig = {
+  thresholds: {
+    errorRate: 2,        // % 
+    latency: 5000,       // ms
+    bounceRate: 2,       // %
+  },
+  notifications: {
+    slack: '#email-alerts',
+    pager: 'email-oncall'
+  }
+}
+```
+
+<h3 style="color: #58a6ff; margin: 1rem 0 0.5rem 0;">🎯 Benefits</h3>
+
+- **Ownership** - Teams define their own thresholds
+- **Consistency** - Standardized monitoring patterns
+- **Scalability** - Self-service reduces bottlenecks
+- **Governance** - All changes through PR review
+</div>
 
 </div>
 
-<div style="margin-top:1.2rem;">
-  <a href="./code/cdk-monitoring.html" style="padding:10px 16px;border:1px solid #58a6ff;border-radius:8px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View CDK code</a>
+<div style="margin-top:1.2rem; font-size: 50%;">
+  <a href="./code/cdk-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View CDK code</a>
   &nbsp;&nbsp;
-  <a href="./code/gha-monitoring.html" style="padding:10px 16px;border:1px solid #58a6ff;border-radius:8px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
+  <a href="./code/gha-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
 </div>
 
 ---

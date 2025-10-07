@@ -45,8 +45,17 @@
     </style>
   </head>
   <body>
-    <a class="back-link" href="../deck.html"
-      onclick="this.href += '?v=2025-01-07&t=' + Date.now(); return true;"
+    <a class="back-link" href="#"
+      onclick="
+        // Try to go back in history first (for local development)
+        if (document.referrer && document.referrer.includes(window.location.origin)) {
+          window.history.back();
+        } else {
+          // Fallback for GitHub Pages or direct access
+          window.location.href = '../' + '?v=2025-01-07&t=' + Date.now();
+        }
+        return false;
+      "
       >← Back to slides</a
     >
     <h1>🚀 PR-Driven Monitoring Deployment with Environment Promotion</h1>

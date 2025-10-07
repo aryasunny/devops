@@ -83,14 +83,14 @@ section.smaller table {
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 90vw !important;
+    width: 95vw !important;
     height: auto !important;
-    max-height: 90vh !important;
+    max-height: 95vh !important;
     z-index: 9999 !important;
     background: white !important;
     box-shadow: 0 0 50px rgba(0,0,0,0.8) !important;
     border-radius: 8px !important;
-    padding: 20px !important;
+    padding: 15px !important;
   }
   
   .diagram-overlay {

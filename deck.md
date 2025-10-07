@@ -27,7 +27,10 @@ section.smaller table {
 
 # Event-Driven Monitoring & DevOps Automation
 
-### _AWS CDK + GitHub Actions + Shift-Left Observability_
+### \_AWS CDK + Gi <a href="./code/gha-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
+
+</div>ref="./code/gha-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
+</div>Actions + Shift-Left Observability_
 
 ---
 
@@ -35,14 +38,167 @@ section.smaller table {
 
 ## System Architecture Overview
 
-### Key Components
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; font-size: 0.9em;">
 
-- **API Gateway** - HTTP endpoint for email requests
-- **Processing Lambda** - Validates and queues emails
-- **DynamoDB** - Stores email status and metadata
-- **EventBridge** - Decouples processing from delivery
-- **SES** - Handles actual email transmission
-- **SQS + DLQ** - Reliable delivery with error handling
+<div>
+<h3 style="color: #58a6ff; font-size: 0.8rem; margin: 0 0 0.5rem 0;">Key Components</h3>
+
+- **RestApi** (`aws-apigateway`) - HTTP endpoint with CORS
+- **Function** (`aws-lambda`) - Node.js runtime with layers
+- **Table** (`aws-dynamodb`) - On-demand billing, GSI
+- **EventBus** (`aws-events`) - Custom event patterns
+- **EmailIdentity** (`aws-sesv2`) - Domain verification
+- **Queue + DeadLetterQueue** (`aws-sqs`) - FIFO ordering
+
+<p style="font-size: 0.5625rem; color: #8b949e; font-style: italic; margin: 0.8rem 0;">*All infrastructure is version-controlled, peer-reviewed, and deployed through CI/CD pipelines*</p>
+
+<div style="margin-top: 1rem;">
+  <a href="./code/cdk-system-components.html" style="padding: 3px 6px; border: 1px solid #58a6ff; border-radius: 3px; text-decoration: none; color: #58a6ff; background: rgba(88,166,255,0.1); font-size: 0.55em;">View System Components CDK</a>
+</div>
+
+<!-- Pipeline Diagram moved from Dev & Deploy section -->
+<div style="margin-top: 0.8rem; padding: 0.4rem; background: rgba(56,189,248,0.05); border-radius: 6px; border: 1px solid rgba(56,189,248,0.2);">
+  <div style="font-size: 0.3em; color: #38bdf8; font-weight: bold; margin-bottom: 0.4rem; text-align: center;">🔄 Complete Development Pipeline</div>
+  
+  <!-- PR Phase -->
+  <div style="background: rgba(255,149,0,0.1); border-radius: 4px; padding: 0.3rem; margin-bottom: 0.4rem;">
+    <div style="color: #ff9500; font-weight: bold; font-size: 0.25em; margin-bottom: 0.3rem;">PR Phase - Early Quality Gates</div>
+    <div style="font-size: 0.22em; line-height: 1.2; display: flex; justify-content: space-between; align-items: center;">
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #ff9500; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🔄 PR</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Branch Push</div>
+      </div>
+      <div style="color: #ff9500; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #1f6feb; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🔒 Security</div>
+        <div style="color: #7d8590; font-size: 0.8em;">SAST + Deps</div>
+      </div>
+      <div style="color: #ff9500; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #22c55e; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">✅ Tests</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Unit + Lint</div>
+      </div>
+      <div style="color: #ff9500; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #a855f7; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">📋 Review</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Peer + Policy</div>
+      </div>
+    </div>
+  </div>
+  
+  <div style="text-align: center; color: #22c55e; font-weight: bold; font-size: 0.25em; margin: 0.3rem 0;">✅ All Gates Pass → Merge Approved</div>
+  
+  <!-- Post-Merge Phase -->
+  <div style="background: rgba(34,197,94,0.1); border-radius: 4px; padding: 0.3rem;">
+    <div style="color: #22c55e; font-weight: bold; font-size: 0.25em; margin-bottom: 0.3rem;">Deployment Phase - Automated Release</div>
+    <div style="font-size: 0.22em; line-height: 1.2; display: flex; justify-content: space-between; align-items: center;">
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #22c55e; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🚀 Deploy</div>
+        <div style="color: #7d8590; font-size: 0.8em;">CDK Stack</div>
+      </div>
+      <div style="color: #22c55e; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #7c3aed; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🧪 E2E</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Integration</div>
+      </div>
+      <div style="color: #22c55e; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #da3633; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">📊 Monitor</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Observability</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div>
+<h3 style="color: #58a6ff; font-size: 0.8rem; margin: 0 0 0.5rem 0;">Shift-Left Deployment Flow</h3>
+
+<div style="font-size: 0.35em; line-height: 1.3;">
+
+<!-- PR Phase -->
+<div style="background: rgba(255,149,0,0.08); border: 1px solid rgba(255,149,0,0.2); border-radius: 4px; padding: 0.4rem; margin: 0.3rem 0;">
+  <div style="color: #ff9500; font-weight: bold; margin-bottom: 0.3rem; font-size: 1.1em;">🔄 Pull Request Phase (Shift-Left)</div>
+  
+  <div style="display: flex; align-items: center; margin: 0.2rem 0; padding: 0.15rem; background: rgba(255,149,0,0.1); border-radius: 3px;">
+    <span style="background: #ff9500; color: white; padding: 0.15rem 0.3rem; border-radius: 2px; margin-right: 0.4rem; font-weight: bold; font-size: 0.9em;">PR</span>
+    <span><strong>Create PR</strong> → Automated checks trigger immediately</span>
+  </div>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; margin: 0.3rem 0;">
+    <div style="background: rgba(31,111,235,0.1); padding: 0.2rem; border-radius: 2px; border-left: 2px solid #1f6feb;">
+      <strong style="color: #1f6feb;">Security Scans</strong><br/>
+      <span style="font-size: 0.9em; color: #7d8590;">SAST, dependency scan, secrets detection</span>
+    </div>
+    <div style="background: rgba(124,58,237,0.1); padding: 0.2rem; border-radius: 2px; border-left: 2px solid #7c3aed;">
+      <strong style="color: #7c3aed;">Code Quality</strong><br/>
+      <span style="font-size: 0.9em; color: #7d8590;">Linting, formatting, complexity</span>
+    </div>
+    <div style="background: rgba(34,197,94,0.1); padding: 0.2rem; border-radius: 2px; border-left: 2px solid #22c55e;">
+      <strong style="color: #22c55e;">Unit Tests</strong><br/>
+      <span style="font-size: 0.9em; color: #7d8590;">Coverage >80%, mocked dependencies</span>
+    </div>
+    <div style="background: rgba(168,85,247,0.1); padding: 0.2rem; border-radius: 2px; border-left: 2px solid #a855f7;">
+      <strong style="color: #a855f7;">CDK Validation</strong><br/>
+      <span style="font-size: 0.9em; color: #7d8590;">Synth, diff, policy checks</span>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; color: #22c55e; margin: 0.2rem 0; font-weight: bold;">✅ All checks pass → Ready for merge</div>
+
+<!-- Post-Merge Phase -->
+<div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 4px; padding: 0.4rem; margin: 0.3rem 0;">
+  <div style="color: #22c55e; font-weight: bold; margin-bottom: 0.3rem; font-size: 1.1em;">🚀 Post-Merge Deployment</div>
+
+  <div style="display: flex; align-items: center; margin: 0.2rem 0; padding: 0.15rem; background: rgba(34,197,94,0.1); border-radius: 3px;">
+    <span style="background: #22c55e; color: white; padding: 0.15rem 0.3rem; border-radius: 2px; margin-right: 0.4rem; font-weight: bold; font-size: 0.9em;">1</span>
+    <span><strong>Merge to Main</strong> → Triggers production deployment</span>
+  </div>
+
+  <div style="display: flex; align-items: center; margin: 0.2rem 0; padding: 0.15rem; background: rgba(34,197,94,0.1); border-radius: 3px;">
+    <span style="background: #1f6feb; color: white; padding: 0.15rem 0.3rem; border-radius: 2px; margin-right: 0.4rem; font-weight: bold; font-size: 0.9em;">2</span>
+    <span><strong>CDK Deploy</strong> → Creates/Updates AWS resources</span>
+  </div>
+
+  <div style="display: flex; align-items: center; margin: 0.2rem 0; padding: 0.15rem; background: rgba(34,197,94,0.1); border-radius: 3px;">
+    <span style="background: #7c3aed; color: white; padding: 0.15rem 0.3rem; border-radius: 2px; margin-right: 0.4rem; font-weight: bold; font-size: 0.9em;">3</span>
+    <span><strong>Integration Tests</strong> → End-to-end validation</span>
+  </div>
+</div>
+
+<div style="margin-top: 0.8rem; padding: 0.3rem; border-left: 3px solid #ff9500; background: rgba(255,149,0,0.05);">
+  <strong style="color: #ff9500;">Shift-Left Benefits:</strong> Early feedback, reduced deployment risk, faster fixes, quality gates
+</div>
+
+<!-- Key Metrics & Success Indicators -->
+<div style="margin-top: 0.8rem; padding: 0.4rem; background: rgba(34,197,94,0.08); border-radius: 4px; border: 1px solid rgba(34,197,94,0.2);">
+  <div style="color: #22c55e; font-weight: bold; margin-bottom: 0.3rem; font-size: 1em;">📊 Key Success Metrics</div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; font-size: 0.8em; line-height: 1.2;">
+    <div style="padding: 0.2rem; background: rgba(34,197,94,0.1); border-radius: 2px;">
+      <strong style="color: #22c55e;">PR Cycle Time:</strong><br/>
+      <span style="color: #7d8590; font-size: 0.9em;">Target: <60min validation</span>
+    </div>
+    <div style="padding: 0.2rem; background: rgba(34,197,94,0.1); border-radius: 2px;">
+      <strong style="color: #22c55e;">Deployment Frequency:</strong><br/>
+      <span style="color: #7d8590; font-size: 0.9em;">Target: Multiple/day</span>
+    </div>
+    <div style="padding: 0.2rem; background: rgba(34,197,94,0.1); border-radius: 2px;">
+      <strong style="color: #22c55e;">Lead Time:</strong><br/>
+      <span style="color: #7d8590; font-size: 0.9em;">Code to prod <4hr</span>
+    </div>
+    <div style="padding: 0.2rem; background: rgba(34,197,94,0.1); border-radius: 2px;">
+      <strong style="color: #22c55e;">Change Failure Rate:</strong><br/>
+      <span style="color: #7d8590; font-size: 0.9em;">Target: <2%</span>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+</div>
 
 ![System Design](images/system-design.png)
 
@@ -59,7 +215,7 @@ h3 {
 }
 
 ul {
-  font-size: 0.75rem;
+  font-size: 0.42rem;
   line-height: 1.1;
   margin: 0.05rem 0 0.1rem 0;
   padding-left: 0.8rem;
@@ -200,6 +356,65 @@ export const emailServiceConfig = {
   <a href="./code/cdk-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View CDK code</a>
   &nbsp;&nbsp;
   <a href="./code/gha-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
+</div>
+
+---
+
+<!-- _class: invert smaller -->
+
+<h2 style="font-size: 2.8rem !important; margin-bottom: 1.2rem !important;">🔧 Triaging Failures & Implementing Fixes</h2>
+
+<div style="margin-top: 0.8rem; padding: 0.4rem; background: rgba(56,189,248,0.05); border-radius: 6px; border: 1px solid rgba(56,189,248,0.2);">
+  <div style="font-size: 0.3em; color: #38bdf8; font-weight: bold; margin-bottom: 0.4rem; text-align: center;">� Shift-Left Pipeline (PR-First Approach)</div>
+  
+  <!-- PR Phase -->
+  <div style="background: rgba(255,149,0,0.1); border-radius: 4px; padding: 0.3rem; margin-bottom: 0.4rem;">
+    <div style="color: #ff9500; font-weight: bold; font-size: 0.25em; margin-bottom: 0.3rem;">PR Phase - Early Quality Gates</div>
+    <div style="font-size: 0.22em; line-height: 1.2; display: flex; justify-content: space-between; align-items: center;">
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #ff9500; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🔄 PR</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Branch Push</div>
+      </div>
+      <div style="color: #ff9500; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #1f6feb; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🔒 Security</div>
+        <div style="color: #7d8590; font-size: 0.8em;">SAST + Deps</div>
+      </div>
+      <div style="color: #ff9500; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #22c55e; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">✅ Tests</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Unit + Lint</div>
+      </div>
+      <div style="color: #ff9500; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #a855f7; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">📋 Review</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Peer + Policy</div>
+      </div>
+    </div>
+  </div>
+  
+  <div style="text-align: center; color: #22c55e; font-weight: bold; font-size: 0.25em; margin: 0.3rem 0;">✅ All Gates Pass → Merge Approved</div>
+  
+  <!-- Post-Merge Phase -->
+  <div style="background: rgba(34,197,94,0.1); border-radius: 4px; padding: 0.3rem;">
+    <div style="color: #22c55e; font-weight: bold; font-size: 0.25em; margin-bottom: 0.3rem;">Deployment Phase - Automated Release</div>
+    <div style="font-size: 0.22em; line-height: 1.2; display: flex; justify-content: space-between; align-items: center;">
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #22c55e; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🚀 Deploy</div>
+        <div style="color: #7d8590; font-size: 0.8em;">CDK Stack</div>
+      </div>
+      <div style="color: #22c55e; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #7c3aed; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">🧪 E2E</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Integration</div>
+      </div>
+      <div style="color: #22c55e; font-weight: bold; font-size: 0.8em;">→</div>
+      <div style="text-align: center; flex: 1;">
+        <div style="background: #da3633; color: white; padding: 0.15rem 0.3rem; border-radius: 3px; margin-bottom: 0.2rem; font-size: 0.9em;">📊 Monitor</div>
+        <div style="color: #7d8590; font-size: 0.8em;">Observability</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 ---

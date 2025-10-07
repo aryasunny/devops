@@ -54,20 +54,168 @@
       configuration validation, PR reviews, environment promotion (dev → staging
       → prod), and rollback capabilities.
     </p>
+    
+    <!-- Visual Deployment Flow -->
+    <div style="background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin: 20px 0;">
+      <h3 style="color: #58a6ff; margin-top: 0;">� Shift-Left Pipeline: PR-First Quality Gates</h3>
+      
+      <!-- PR Validation Phase -->
+      <div style="background: rgba(255,149,0,0.1); border: 1px solid rgba(255,149,0,0.3); border-radius: 8px; padding: 15px; margin: 15px 0;">
+        <h4 style="color: #ff9500; margin: 0 0 15px 0; font-size: 16px;">📋 Pull Request Phase - Early Quality Enforcement</h4>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 15px 0;">
+          
+          <div style="text-align: center; background: #0d1117; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">
+            <div style="background: #1f6feb; color: white; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-weight: bold; font-size: 14px;">
+              🔒 Security Scan
+            </div>
+            <div style="font-size: 11px; color: #7d8590; line-height: 1.3;">
+              • SAST analysis<br/>
+              • Dependency scan<br/>
+              • Secret detection<br/>
+              • License compliance
+            </div>
+          </div>
+          
+          <div style="text-align: center; background: #0d1117; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">
+            <div style="background: #22c55e; color: white; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-weight: bold; font-size: 14px;">
+              ✅ Code Quality
+            </div>
+            <div style="font-size: 11px; color: #7d8590; line-height: 1.3;">
+              • ESLint/Prettier<br/>
+              • Unit tests >80%<br/>
+              • Complexity check<br/>
+              • Type validation
+            </div>
+          </div>
+          
+          <div style="text-align: center; background: #0d1117; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">
+            <div style="background: #a855f7; color: white; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-weight: bold; font-size: 14px;">
+              📋 CDK Validation
+            </div>
+            <div style="font-size: 11px; color: #7d8590; line-height: 1.3;">
+              • CDK synth check<br/>
+              • Policy validation<br/>
+              • Resource diff<br/>
+              • Cost estimation
+            </div>
+          </div>
+          
+          <div style="text-align: center; background: #0d1117; padding: 12px; border-radius: 6px; border: 1px solid #30363d;">
+            <div style="background: #238636; color: white; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px; font-weight: bold; font-size: 14px;">
+              👥 Peer Review
+            </div>
+            <div style="font-size: 11px; color: #7d8590; line-height: 1.3;">
+              • Code review<br/>
+              • Architecture check<br/>
+              • Security review<br/>
+              • Approval required
+            </div>
+          </div>
+          
+        </div>
+        
+        <div style="text-align: center; margin: 15px 0; padding: 10px; background: rgba(34,197,94,0.1); border-radius: 6px; border: 1px solid rgba(34,197,94,0.3);">
+          <span style="color: #22c55e; font-weight: bold; font-size: 14px;">✅ All Quality Gates Pass → Merge Approved</span>
+        </div>
+      </div>
+      
+      <!-- Post-Merge Deployment Phase -->
+      <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 15px; margin: 15px 0;">
+        <h4 style="color: #22c55e; margin: 0 0 15px 0; font-size: 16px;">🚀 Post-Merge Phase - Automated Deployment</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin: 15px 0;">
+          
+          <div style="text-align: center; flex: 1; min-width: 140px;">
+            <div style="background: #ff9500; color: white; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-weight: bold;">
+              🚀 Deploy Stack
+            </div>
+            <div style="font-size: 12px; color: #7d8590;">
+              CDK deploy<br/>CloudFormation<br/>Resource creation
+            </div>
+          </div>
+          
+          <div style="color: #58a6ff; font-size: 20px; font-weight: bold;">→</div>
+          
+          <div style="text-align: center; flex: 1; min-width: 140px;">
+            <div style="background: #7c3aed; color: white; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-weight: bold;">
+              🧪 Integration Tests
+            </div>
+            <div style="font-size: 12px; color: #7d8590;">
+              End-to-end<br/>API validation<br/>Smoke tests
+            </div>
+          </div>
+          
+          <div style="color: #58a6ff; font-size: 20px; font-weight: bold;">→</div>
+          
+          <div style="text-align: center; flex: 1; min-width: 140px;">
+            <div style="background: #da3633; color: white; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-weight: bold;">
+              📊 Monitor & Alert
+            </div>
+            <div style="font-size: 12px; color: #7d8590;">
+              Health checks<br/>Metrics validation<br/>Alert setup
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <div style="margin-top: 15px; padding: 10px; background: rgba(255,149,0,0.1); border-left: 3px solid #ff9500; border-radius: 4px;">
+        <strong style="color: #ff9500;">Shift-Left Benefits:</strong> 
+        <span style="color: #e6edf3;">Early defect detection, Reduced deployment risk, Faster feedback cycles, Quality enforcement, Security by design</span>
+      </div>
+    </div>
 
-    <h2>PR Validation Workflow</h2>
+    <h2>🔄 Shift-Left PR Validation Workflow</h2>
+    <p style="background: rgba(255,149,0,0.1); padding: 12px; border-radius: 6px; border-left: 4px solid #ff9500; margin: 15px 0;">
+      <strong style="color: #ff9500;">Shift-Left Approach:</strong> All quality gates run automatically on PR creation, ensuring issues are caught early in the development cycle before merge.
+    </p>
+    
     <pre><code name="yaml"># .github/workflows/pr-validation.yml
-name: Validate Monitoring Changes
+name: 🔄 Shift-Left PR Validation</code>
 
 on:
   pull_request:
-    paths:
+    branches: [main, develop]
+    paths: 
       - 'teams/*/monitoring-config.ts'
-      - 'infrastructure/monitoring-stack.ts'
+      - 'infrastructure/**'
+      - 'src/**'
       - 'cdk.json'
 
 jobs:
-  validate-config:
+  # Parallel execution for faster feedback ⚡
+  security-compliance:
+    name: 🔒 Security & Compliance Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for accurate scanning
+      
+      - name: 🕵️ Secret & Credential Detection
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+      
+      - name: 🔍 SAST Code Analysis  
+        uses: github/super-linter@v5
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_TYPESCRIPT_STANDARD: true
+          VALIDATE_YAML: true
+          VALIDATE_JSON: true
+      
+      - name: 📋 Dependency Vulnerability Scan
+        run: |
+          npm audit --audit-level=moderate
+          # Block on high/critical vulnerabilities
+          npm audit --audit-level=high
+
+  code-quality:
+    name: ✅ Code Quality & Testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,36 +223,78 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate team configurations
+      - name: 🧹 Lint & Format Check
         run: |
-          npm run validate-configs
-          # Check threshold ranges, notification endpoints
+          # TypeScript compilation
+          npm run build
           
-      - name: CDK Synth & Diff
+          # ESLint with security rules
+          npm run lint
+          
+          # Prettier formatting
+          npm run format:check
+          
+          # Code complexity analysis
+          npm run complexity:check
+
+      - name: 🧪 Unit Tests with Coverage
+        run: |
+          npm run test:unit -- --coverage --threshold=80
+          npm run test:integration
+          
+      - name: 📊 Upload Coverage
+        uses: codecov/codecov-action@v3
+
+  infrastructure-validation:
+    name: 📋 Infrastructure & Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 🏗️ CDK Synthesis & Validation
         env:
           AWS_DEFAULT_REGION: ap-southeast-2
         run: |
-          npx cdk synth --all
-          npx cdk diff monitoring-stack-dev
+          # Synthesize all stacks with strict validation
+          npx cdk synth --all --strict
           
-      - name: Security scan
-        run: |
-          npm audit
+          # Security and compliance checks
           npx cdk-nag --app 'npx ts-node infrastructure/app.ts'
           
-      - name: Comment PR with changes
+      - name: 📊 Infrastructure Analysis
+        run: |
+          # Show resource differences
+          npx cdk diff --all
+          
+          # Validate monitoring configurations
+          npm run validate:monitoring-config
+          
+          # Check SLI/SLO thresholds
+          npm run validate:sli-slo
+          
+          # Cost impact estimation
+          npm run estimate:cost-impact
+
+      - name: 💬 Comment PR with Analysis
         uses: actions/github-script@v7
+        if: always()
         with:
           script: |
-            const fs = require('fs');
-            const diff = fs.readFileSync('cdk.diff', 'utf8');
-            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,

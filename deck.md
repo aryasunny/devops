@@ -53,8 +53,11 @@ section.smaller table {
 # Event-Driven Architecture & DevOps Automation
 
 #### _AWS CDK_
-#### _GitHub Actions_ 
+
+#### _GitHub Actions_
+
 #### _Shift-Left_
+
 #### _Observability_
 
 ---
@@ -140,7 +143,7 @@ function toggleDiagramZoom(img) {
 - **Function** (`aws-lambda`) - Node.js runtime with layers
 - **Table** (`aws-dynamodb`) - On-demand billing, GSI
 - **EventBus** (`aws-events`) - Custom event patterns
-- **EmailIdentity** (`aws-sesv2`) - Domain verification
+- **EmailIdentity** (`aws-sesv2`) - Email sending service
 - **Queue + DeadLetterQueue** (`aws-sqs`) - FIFO ordering
 
 <div style="margin-top: 0.3rem;">
@@ -462,7 +465,7 @@ export const emailServiceConfig = {
 
 | **Step**       | **Action**       | **Tool/Metric**          | **Finding**           |
 | -------------- | ---------------- | ------------------------ | --------------------- |
-| **Detect**     | CloudWatch alarm | `EmailSuccessRate < 95%` | Alert at 2:15 AM      |
+| **Detect**     | CloudWatch alarm | `EmailSuccessRate < 95%` | Alert at 10:30 AM     |
 | **Triage**     | Check SES stats  | SES Console              | Bounce: 8% (vs <2%)   |
 | **Root Cause** | Review batches   | DynamoDB logs            | Bad campaign data     |
 | **Fix**        | Add validation   | Lambda code              | Block invalid domains |
@@ -559,7 +562,6 @@ export const emailServiceConfig = {
 - **Blue-green deployments** with health checks
 - **Canary releases** with automatic rollback
 - **Feature flags** for gradual rollouts
-- **Database migrations** with zero downtime
 - **CDK drift detection** and remediation
 - **End-to-end testing** in production-like env
 </div>

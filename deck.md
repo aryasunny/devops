@@ -141,7 +141,7 @@ function toggleDiagramZoom(img) {
 - **Queue + DeadLetterQueue** (`aws-sqs`) - FIFO ordering
 
 <div style="margin-top: 0.3rem;">
-  <a href="./code/cdk-system-components.html" style="padding: 2px 4px; border: 1px solid #58a6ff; border-radius: 2px; text-decoration: none; color: #58a6ff; background: rgba(88,166,255,0.1); font-size: 0.45em;">View System Components IaC</a>
+  <a href="./code/cdk-system-components.html?v=2025-01-07" style="padding: 2px 4px; border: 1px solid #58a6ff; border-radius: 2px; text-decoration: none; color: #58a6ff; background: rgba(88,166,255,0.1); font-size: 0.45em;">View System Components IaC</a>
 </div>
 
 <!-- Pipeline Diagram moved from Dev & Deploy section -->

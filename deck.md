@@ -87,7 +87,7 @@ img {
 
 ## 📡 Monitoring & Observability
 
-<div style="font-size:0.45em;">
+<div style="font-size:0.315em;">
 
 | **Component** | **What to Monitor**        | **Failure Indicators**          | **Detection / Metric**                                     | **Alert Trigger**                  | **Resolution**                                       |
 | ------------- | -------------------------- | ------------------------------- | ---------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------- |
@@ -100,13 +100,12 @@ img {
 
 </div>
 
----
+<div style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
 
-<!-- _class: invert smaller -->
+<div>
+<h3 style="font-size: 50%;">📈 Success Metrics</h3>
 
-## 📈 Success Metrics
-
-<div style="font-size:0.65em;">
+<div style="font-size:0.364em;">
 
 | **KPI**             | **Definition**                    | **Purpose**           | **Target** |
 | ------------------- | --------------------------------- | --------------------- | ---------- |
@@ -118,26 +117,50 @@ img {
 | DLQ Messages        | DLQ depth                         | Reliability           | 0          |
 
 </div>
+</div>
+
+<div>
+<h3 style="font-size: 50%;">🚨 Alert Configuration</h3>
+
+<div style="font-size:0.364em;">
+
+| **Alert Type**     | **Threshold**    | **Severity** | **Action**                |
+| ------------------ | ---------------- | ------------ | ------------------------- |
+| Email Failure Rate | > 2% for 5min    | Critical     | Page on-call immediately  |
+| Processing Latency | > 10s for 3min   | High         | Slack alert + investigate |
+| DLQ Messages       | > 0 messages     | Medium       | Auto-retry + notify team  |
+| SES Bounce Rate    | > 2%             | High         | Pause sending + review    |
+| Lambda Errors      | > 5 errors/min   | Critical     | Page on-call + rollback   |
+| DynamoDB Throttles | > 1 throttle/min | Medium       | Scale capacity + alert    |
+
+</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- _class: invert -->
 
 ---
 
 <!-- _class: invert -->
 
-<div style="font-size: 0.4em;">
+<h2 style="font-size: 91%;">🧩 Dev & Deploy of Monitoring (AWS CDK + GitHub Actions)</h2>
 
-## 🧩 Dev & Deploy of Monitoring (AWS CDK + GitHub Actions)
+<div style="font-size: 50%;">
 
 - Define **CloudWatch alarms, dashboards, log metrics, SNS topics** in **CDK** (IaC).
 - Ship them via **GitHub Actions** to every env (preview → deploy → verify).
 - Observability changes are **version-controlled**, reviewed, and promoted like app code.
 - Engineers own **dashboards + alarms** from day one (shift-left).
 
+</div>
+
 <div style="margin-top:1.2rem;">
   <a href="./code/cdk-monitoring.html" style="padding:10px 16px;border:1px solid #58a6ff;border-radius:8px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View CDK code</a>
   &nbsp;&nbsp;
   <a href="./code/gha-monitoring.html" style="padding:10px 16px;border:1px solid #58a6ff;border-radius:8px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
-</div>
-
 </div>
 
 ---

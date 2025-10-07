@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CDK – System Components Stack</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Roboto, sans-serif;
+        background-color: #0d1117;
+        color: #e6edf3;
+        padding: 40px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        padding: 20px;
+        overflow-x: auto;
+        font-size: 14px;
+        color: #d1d5da;
+      }
+      h1,
+      h2 {
+        color: #58a6ff;
+      }
+      a {
+        color: #8b949e;
+        text-decoration: none;
+      }
+      a:hover {
+        color: #58a6ff;
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 12px;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        background-color: #21262d;
+      }
+      .back-link:hover {
+        background-color: #30363d;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back-link" href="#" onclick="window.history.back(); return false;"
+      >← Back to slides</a
+    >
+    <h1>CDK: Email Service System Components</h1>
+    <p>
+      Complete Infrastructure as Code for the event-driven email service
+      architecture. All components are created via AWS CDK with proper
+      integrations, IAM roles, and cross-stack dependencies.
+    </p>
+
+    <h2>Email Service Stack</h2>
+    <pre><code>// infrastructure/email-service-stack.ts
+import { Stack, StackProps, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import {
+  RestApi, LambdaIntegration, Cors, 
+  RequestValidator, Model, JsonSchemaType
+} from 'aws-cdk-lib/aws-apigateway';
+import {
+  Function, Runtime, Code, LayerVersion,
+  Architecture, Tracing
+} from 'aws-cdk-lib/aws-lambda';
+import {
+  Table, BillingMode, AttributeType,
+  GlobalSecondaryIndex, ProjectionType
+} from 'aws-cdk-lib/aws-dynamodb';
+import {
+  EventBus, Rule, EventPattern
+} from 'aws-cdk-lib/aws-events';
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
+import {
+  Queue, DeadLetterQueue, QueueEncryption
+} from 'aws-cdk-lib/aws-sqs';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import {
+  EmailIdentity, Identity, DkimIdentity
+} from 'aws-cdk-lib/aws-sesv2';
+import {
+  Role, ServicePrincipal, PolicyStatement,
+  Effect, ManagedPolicy
+} from 'aws-cdk-lib/aws-iam';
+
+export class EmailServiceStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    // DynamoDB Table for Email Status & Metadata
+    const emailTable = new Table(this, 'EmailTable', {
+      tableName: 'email-service-requests',
+      partitionKey: { name: 'requestId', type: AttributeType.STRING },
+      billingMode: BillingMode.ON_DEMAND,
+      pointInTimeRecovery: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+      globalSecondaryIndexes: [
+        {
+          indexName: 'status-index',
+          partitionKey: { name: 'status', type: AttributeType.STRING },
+          sortKey: { name: 'createdAt', type: AttributeType.STRING },
+          projectionType: ProjectionType.ALL
+        },
+        {
+          indexName: 'email-index',
+          partitionKey: { name: 'recipientEmail', type: AttributeType.STRING },
+          sortKey: { name: 'createdAt', type: AttributeType.STRING },
+          projectionType: ProjectionType.ALL
+        }
+      ]
+    });
+
+    // SQS Dead Letter Queue
+    const emailDLQ = new Queue(this, 'EmailDLQ', {
+      queueName: 'email-service-dlq',
+      encryption: QueueEncryption.SQS_MANAGED,
+      retentionPeriod: Duration.days(14)
+    });
+
+    // SQS Queue for Email Processing
+    const emailQueue = new Queue(this, 'EmailQueue', {
+      queueName: 'email-service-queue',
+      encryption: QueueEncryption.SQS_MANAGED,
+      visibilityTimeout: Duration.minutes(5),
+      deadLetterQueue: {
+        queue: emailDLQ,
+        maxReceiveCount: 3
+      }
+    });
+
+    // EventBridge Custom Event Bus
+    const emailEventBus = new EventBus(this, 'EmailEventBus', {
+      eventBusName: 'email-service-events'
+    });
+
+    // SES Email Identity (Domain)
+    const emailIdentity = new EmailIdentity(this, 'EmailDomain', {
+      identity: Identity.domain('example.com'),
+      dkimSigning: true
+    });
+
+    // Lambda Layer for Common Dependencies
+    const commonLayer = new LayerVersion(this, 'CommonLayer', {
+      layerVersionName: 'email-service-common',
+      code: Code.fromAsset('lambda-layers/common'),
+      compatibleRuntimes: [Runtime.NODEJS_18_X],
+      compatibleArchitectures: [Architecture.ARM_64],
+      description: 'Common utilities and AWS SDK'
+    });
+
+    // IAM Role for API Lambda
+    const apiLambdaRole = new Role(this, 'ApiLambdaRole', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+      ],
+      inlinePolicies: {
+        DynamoDBAccess: new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            'dynamodb:PutItem',
+            'dynamodb:GetItem',
+            'dynamodb:UpdateItem',
+            'dynamodb:Query'
+          ],
+          resources: [emailTable.tableArn, `${emailTable.tableArn}/index/*`]
+        }),
+        EventBridgeAccess: new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['events:PutEvents'],
+          resources: [emailEventBus.eventBusArn]
+        })
+      }
+    });
+
+    // API Processing Lambda
+    const apiLambda = new Function(this, 'ApiLambda', {
+      functionName: 'email-service-api',
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'index.handler',
+      code: Code.fromAsset('lambda/api'),
+      layers: [commonLayer],
+      role: apiLambdaRole,
+      timeout: Duration.seconds(30),
+      memorySize: 512,
+      tracing: Tracing.ACTIVE,
+      environment: {
+        EMAIL_TABLE_NAME: emailTable.tableName,
+        EVENT_BUS_NAME: emailEventBus.eventBusName,
+        POWERTOOLS_SERVICE_NAME: 'email-service-api'
+      }
+    });
+
+    // REST API Gateway
+    const api = new RestApi(this, 'EmailServiceApi', {
+      restApiName: 'Email Service API',
+      description: 'API Gateway for email service requests',
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS,
+        allowHeaders: ['Content-Type', 'Authorization']
+      },
+      deployOptions: {
+        stageName: 'v1',
+        throttleSettings: {
+          rateLimit: 1000,
+          burstLimit: 2000
+        }
+      }
+    });
+
+    // Request Validator
+    const requestValidator = new RequestValidator(this, 'RequestValidator', {
+      restApi: api,
+      validateRequestBody: true,
+      validateRequestParameters: true
+    });
+
+    // Email Request Model
+    const emailRequestModel = new Model(this, 'EmailRequestModel', {
+      restApi: api,
+      modelName: 'EmailRequest',
+      schema: {
+        type: JsonSchemaType.OBJECT,
+        required: ['to', 'subject', 'body'],
+        properties: {
+          to: { type: JsonSchemaType.STRING, format: 'email' },
+          cc: { type: JsonSchemaType.ARRAY, items: { type: JsonSchemaType.STRING } },
+          subject: { type: JsonSchemaType.STRING, minLength: 1, maxLength: 200 },
+          body: { type: JsonSchemaType.STRING, minLength: 1 },
+          template: { type: JsonSchemaType.STRING },
+          metadata: { type: JsonSchemaType.OBJECT }
+        }
+      }
+    });
+
+    // API Gateway Integration
+    const emailResource = api.root.addResource('email');
+    emailResource.addMethod('POST', new LambdaIntegration(apiLambda), {
+      requestValidator: requestValidator,
+      requestModels: { 'application/json': emailRequestModel }
+    });
+
+    // IAM Role for Email Processing Lambda
+    const emailLambdaRole = new Role(this, 'EmailLambdaRole', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+      ],
+      inlinePolicies: {
+        SESAccess: new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['ses:SendEmail', 'ses:SendRawEmail', 'ses:GetSendQuota'],
+          resources: ['*']
+        }),
+        DynamoDBAccess: new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['dynamodb:UpdateItem', 'dynamodb:GetItem'],
+          resources: [emailTable.tableArn]
+        }),
+        SQSAccess: new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            'sqs:ReceiveMessage',
+            'sqs:DeleteMessage',
+            'sqs:GetQueueAttributes'
+          ],
+          resources: [emailQueue.queueArn]
+        })
+      }
+    });
+
+    // Email Processing Lambda
+    const emailProcessorLambda = new Function(this, 'EmailProcessorLambda', {
+      functionName: 'email-service-processor',
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'index.handler',
+      code: Code.fromAsset('lambda/processor'),
+      layers: [commonLayer],
+      role: emailLambdaRole,
+      timeout: Duration.minutes(5),
+      memorySize: 1024,
+      tracing: Tracing.ACTIVE,
+      environment: {
+        EMAIL_TABLE_NAME: emailTable.tableName,
+        SES_DOMAIN: 'example.com',
+        POWERTOOLS_SERVICE_NAME: 'email-service-processor'
+      }
+    });
+
+    // SQS Event Source for Email Processor
+    emailProcessorLambda.addEventSource(new SqsEventSource(emailQueue, {
+      batchSize: 10,
+      maxBatchingWindow: Duration.seconds(5)
+    }));
+
+    // EventBridge Rule for Email Events
+    const emailEventRule = new Rule(this, 'EmailEventRule', {
+      eventBus: emailEventBus,
+      eventPattern: {
+        source: ['email.service'],
+        detailType: ['Email Request Created'],
+        detail: {
+          status: ['PENDING']
+        }
+      } as EventPattern
+    });
+
+    // Add SQS Queue as EventBridge Target
+    emailEventRule.addTarget(new LambdaFunction(emailProcessorLambda));
+
+    // Stack Outputs for Cross-Stack References
+    this.exportValue(api.restApiId, { name: 'EmailServiceApiId' });
+    this.exportValue(emailTable.tableName, { name: 'EmailTableName' });
+    this.exportValue(emailEventBus.eventBusName, { name: 'EmailEventBusName' });
+    this.exportValue(emailQueue.queueArn, { name: 'EmailQueueArn' });
+    this.exportValue(emailDLQ.queueArn, { name: 'EmailDLQArn' });
+    this.exportValue(apiLambda.functionArn, { name: 'ApiLambdaArn' });
+    this.exportValue(emailProcessorLambda.functionArn, { name: 'ProcessorLambdaArn' });
+  }
+}
+</code></pre>
+
+    <h2>App Entry Point</h2>
+    <pre><code>// app.ts
+import { App, Environment } from 'aws-cdk-lib';
+import { EmailServiceStack } from './infrastructure/email-service-stack';
+
+const app = new App();
+
+// Environment configuration
+const env: Environment = {
+  account: process.env.CDK_DEFAULT_ACCOUNT,
+  region: process.env.CDK_DEFAULT_REGION || 'ap-southeast-2'
+};
+
+// Deploy Email Service Stack
+new EmailServiceStack(app, 'EmailServiceStack', {
+  env,
+  description: 'Event-driven email service with API Gateway, Lambda, DynamoDB, EventBridge, and SES',
+  tags: {
+    Project: 'EmailService',
+    Environment: process.env.ENVIRONMENT || 'dev',
+    Owner: 'DevOps-Team'
+  }
+});
+
+app.synth();
+</code></pre>
+
+    <h2>Key Features</h2>
+    <ul>
+      <li>
+        <strong>API Gateway</strong> - RESTful API with request validation and
+        CORS
+      </li>
+      <li>
+        <strong>Lambda Functions</strong> - Serverless processing with ARM64
+        architecture
+      </li>
+      <li>
+        <strong>DynamoDB</strong> - On-demand billing with GSI for efficient
+        queries
+      </li>
+      <li>
+        <strong>EventBridge</strong> - Decoupled event-driven architecture
+      </li>
+      <li><strong>SES</strong> - Domain identity with DKIM signing</li>
+      <li>
+        <strong>SQS + DLQ</strong> - Reliable message processing with error
+        handling
+      </li>
+      <li>
+        <strong>IAM</strong> - Least-privilege security with role-based access
+      </li>
+      <li>
+        <strong>Observability</strong> - X-Ray tracing and CloudWatch
+        integration
+      </li>
+    </ul>
+  </body>
+</html>

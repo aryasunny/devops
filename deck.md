@@ -38,7 +38,75 @@ section.smaller table {
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; font-size: 0.9em;">
 
 <div>
-<h3 style="color: #58a6ff; font-size: 0.8rem; margin: 0 0 0.5rem 0;">Key Components</h3>
+<h3 style="color: #58a6ff; font-size: 0.8rem; margin: 0 0 0.2rem 0;">System Design</h3>
+
+<div style="position: relative;">
+  <img id="systemDiagram" src="images/system-design.png" alt="System Design" 
+       style="width: 100%; height: auto; cursor: pointer; transition: all 0.3s ease; border-radius: 4px; border: 1px solid rgba(88,166,255,0.2);" 
+       onclick="toggleDiagramZoom(this)">
+</div>
+
+<style>
+  .diagram-zoomed {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    z-index: 9999 !important;
+    background: white !important;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8) !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+  }
+  
+  .diagram-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.8);
+    z-index: 9998;
+  }
+</style>
+
+<script>
+let isZoomed = false;
+
+function toggleDiagramZoom(img) {
+  if (isZoomed) {
+    // Close zoom
+    img.classList.remove('diagram-zoomed');
+    const overlay = document.querySelector('.diagram-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
+    img.onclick = function() { toggleDiagramZoom(img); };
+    isZoomed = false;
+  } else {
+    // Open zoom
+    const overlay = document.createElement('div');
+    overlay.className = 'diagram-overlay';
+    document.body.appendChild(overlay);
+    img.classList.add('diagram-zoomed');
+    
+    // Set up close handlers
+    overlay.onclick = function() { toggleDiagramZoom(img); };
+    img.onclick = function(e) { 
+      e.preventDefault();
+      e.stopPropagation();
+      toggleDiagramZoom(img); 
+    };
+    
+    isZoomed = true;
+  }
+}
+</script>
+
+<h3 style="color: #58a6ff; font-size: 0.8rem; margin: 1rem 0 0.5rem 0;">Key Components</h3>
 
 - **RestApi** (`aws-apigateway`) - HTTP endpoint with CORS
 - **Function** (`aws-lambda`) - Node.js runtime with layers
@@ -47,14 +115,12 @@ section.smaller table {
 - **EmailIdentity** (`aws-sesv2`) - Domain verification
 - **Queue + DeadLetterQueue** (`aws-sqs`) - FIFO ordering
 
-<p style="font-size: 0.5625rem; color: #8b949e; font-style: italic; margin: 0.8rem 0;">*All infrastructure is version-controlled, peer-reviewed, and deployed through CI/CD pipelines*</p>
-
-<div style="margin-top: 1rem;">
-  <a href="./code/cdk-system-components.html" style="padding: 3px 6px; border: 1px solid #58a6ff; border-radius: 3px; text-decoration: none; color: #58a6ff; background: rgba(88,166,255,0.1); font-size: 0.55em;">View System Components CDK</a>
+<div style="margin-top: 0.3rem;">
+  <a href="./code/cdk-system-components.html" style="padding: 2px 4px; border: 1px solid #58a6ff; border-radius: 2px; text-decoration: none; color: #58a6ff; background: rgba(88,166,255,0.1); font-size: 0.45em;">View System Components IaC</a>
 </div>
 
 <!-- Pipeline Diagram moved from Dev & Deploy section -->
-<div style="margin-top: 0.8rem; padding: 0.4rem; background: rgba(56,189,248,0.05); border-radius: 6px; border: 1px solid rgba(56,189,248,0.2);">
+<div style="margin-top: 0.1rem; padding: 0.4rem; background: rgba(56,189,248,0.05); border-radius: 6px; border: 1px solid rgba(56,189,248,0.2);">
   <div style="font-size: 0.3em; color: #38bdf8; font-weight: bold; margin-bottom: 0.4rem; text-align: center;">🔄 Complete Development Pipeline</div>
   
   <!-- PR Phase -->
@@ -192,12 +258,12 @@ section.smaller table {
   </div>
 </div>
 
+<p style="font-size: 0.84rem; color: #8b949e; font-style: italic; margin: 0.8rem 0 0.2rem 0;">*All infrastructure is version-controlled, peer-reviewed, and deployed through CI/CD pipelines*</p>
+
 </div>
 </div>
 
 </div>
-
-![System Design](images/system-design.png)
 
 <style scoped>
 h2 {
@@ -350,7 +416,7 @@ export const emailServiceConfig = {
 </div>
 
 <div style="margin-top:1.2rem; font-size: 50%;">
-  <a href="./code/cdk-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View CDK code</a>
+  <a href="./code/cdk-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View IaC for Monitoring components</a>
   &nbsp;&nbsp;
   <a href="./code/gha-monitoring.html" style="padding:5px 8px;border:1px solid #58a6ff;border-radius:4px;text-decoration:none;color:#58a6ff;background:rgba(88,166,255,0.1);">View GitHub Actions workflow</a>
 </div>
